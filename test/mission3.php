@@ -10,16 +10,17 @@
 <?php
 $i=0;
 if(isset($_POST["submit"])){
+    //Step1.直近m、過負荷状態時間tを入力し、監視ログファイルを読み込み、サーバーアドレス毎を時間順に並び替える
     $m = $_POST["ave"];
     $t = $_POST["time"];
     $lines = file("data.txt");
-    foreach($lines as $line){//サーバーアドレス毎に分ける
+    foreach($lines as $line){//explodeを使って各サーバーアドレスのみを取得
         $content = explode(",",$line);
         $add[$i]=$content[1];
         $i++;
-        $address = array_unique($add);
+        $address = array_unique($add);//同じサーバーアドレスは空にし配列（配列addressとする）の要素に入れる 
     }
-    for($j=0;$j<=count($add);$j++){//一つ一つに数字をつける
+    for($j=0;$j<=count($add);$j++){//ある配列addressの要素と一致いた順から番号（番号k）をつける
         $k=0;
         foreach($lines as $line){
             $content = explode(",",$line);
@@ -28,10 +29,12 @@ if(isset($_POST["submit"])){
                 $k++;   
             }
         }
+        //Step2.直近m回での応答平均時間を求める
         for($o=$m-1;$o<$k;$o++){
             $totaltime =0;
             for($p=$o;$p>$o-$m;$p--){
                 $listcontent = explode(",",$list[$p]);
+                //その時応答結果が”-”のとき
                 if(preg_match('/-/',$list[$p])){
                     $listcontent[3]=0;
                 }
@@ -39,7 +42,9 @@ if(isset($_POST["submit"])){
             }
             $averagetime[$o] = $totaltime/$m;
         }
+        //番号oから番号k（そのサーバーアドレスの最後の番号）まで繰り返す
         for($o=$m-1;$o<=$k;$o++){
+            //番号oの平均時間が過負荷状態時間tより大きく、番号o-1の平均時間が過負荷状態時間tより小さい時
             if($averagetime[$o]>=$t && $averagetime[$o-1]<$t){
                 $listcontent = explode(",",$list[$o]);
                 $date = $listcontent[1];
