@@ -10,16 +10,18 @@
 $i=0;
 $o=0;
 if(isset($_POST["submit"])){
+    //Step1.ネットワーク毎に分ける
 $N = $_POST["error"];
 $lines = file("data.txt");
-foreach($lines as $line){                       //サーバーアドレス毎に分ける
+foreach($lines as $line){                      
     $content = explode(",",$line);
-    $data[$i] = "num".$i."_".$line;
-    $add[$i]=$content[1];
+    $data[$i] = "num".$i."_".$line; //上から順番にナンバーをつける(numi_)これを配列dataとする
+    $add[$i]=$content[1]; //explodeを使って各サーバーアドレスのみを取得
     $i++;
     $address = array_unique($add);
 }
-for($i=0;$i<count($add);$i++){                    //ネットワーク毎に分ける
+    
+for($i=0;$i<count($add);$i++){  //サーバーアドレスから同じネットワークを探す                  
     $content = explode("/",$add[$i]);
     $net[$i] = $content[0];
     $netcontent = explode(".",$net[$i]);
@@ -28,7 +30,7 @@ for($i=0;$i<count($add);$i++){                    //ネットワーク毎に分�
     $network[$i] = substr($net_2[$i],0,$content[1]);
     $network = array_unique($network);
 }
-for($i=0;$i<count($add);$i++){
+for($i=0;$i<count($add);$i++){//networkとが一致しているnet_2を探す
     for($j=0;$j<count($add);$j++ ){
         if(preg_match("/".$network[$i]."/",$net_2[$j])&& !empty($network[$i])){
             $x[$o]="num".$j."_";
@@ -46,7 +48,7 @@ for($i=0;$i<count($add);$i++){
     }
     
 }
-for($o=0;$o<count($add);$o++){
+for($o=0;$o<count($add);$o++){//Step2.同じネットワーク内でサーバーアドレス毎に分ける
     $k=0;
     for($i=0;$i<count($add);$i++){
         for($j=0;$j<count($add);$j++){
@@ -59,8 +61,8 @@ for($o=0;$o<count($add);$o++){
             }
         }
     }
+    //Step3.ネットワークの故障期間を求める (ここからできていない)
     for($q=0;$q<=$k-1;$q++){
-        
         if(preg_match('/-/',$datalist[$q]) && !preg_match('/-/',$datalist[$q-1])){
             $listcontent = explode(",",$datalist[$q]);
             $p=$listcontent[0];
